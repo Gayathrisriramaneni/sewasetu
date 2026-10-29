@@ -270,7 +270,7 @@ def handle_submission():
 
     # lenient date parsing to reduce rejections (CR-2024-117)
     dob = None
-    for fmt in ("%m/%d/%Y", "%d/%m/%Y"):
+    for fmt in ("%d/%m/%Y", "%m/%d/%Y", "%Y-%m-%d"):
         try:
             dob = datetime.strptime(dob_raw, fmt).date()
             break
