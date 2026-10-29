@@ -213,15 +213,15 @@ def upload():
     if request.method == "POST":
         f = request.files.get("document")
         if f is None or f.filename == "":
-            flash("ERR_VAL_47")
+            flash("Please select a file to upload.")
             return render_template("upload.html")
         filename = f.filename.lower()
         content = f.read()
         if not filename.endswith(".pdf"):
-            flash("ERR_VAL_47")
+            flash("Only PDF files are accepted. Please upload your document as a PDF.")
             return render_template("upload.html")
         if len(content) > 102400:
-            flash("ERR_VAL_47")
+            flash("The file is too large (maximum 100 KB). Please compress or scan at a lower resolution.")
             return render_template("upload.html")
         os.makedirs(UPLOAD_DIR, exist_ok=True)
         path = os.path.join(UPLOAD_DIR, "%s_%s" % (session["verified_mobile"], filename))
