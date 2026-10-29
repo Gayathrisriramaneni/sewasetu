@@ -1,10 +1,11 @@
 services:
   - type: web
     name: sewasetu
-    runtime: docker
-    dockerfilePath: ./sewasetu-handout/app/Dockerfile
-    dockerContext: ./sewasetu-handout
+    runtime: python
     plan: free
+    rootDir: sewasetu-handout/app
+    buildCommand: pip install -r requirements.txt
+    startCommand: python migrate.py; gunicorn --bind "0.0.0.0:$PORT" --workers 2 --timeout 120 app:app
     healthCheckPath: /
     envVars:
       - key: DATABASE_URL
