@@ -9,8 +9,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN mkdir -p /var/sewasetu/uploads /var/log/sewasetu \
-    && crontab /app/deploy/crontab
+RUN mkdir -p /var/sewasetu/uploads /var/sewasetu/uploads/ack /var/log/sewasetu \
+    && crontab /app/deploy/crontab \
+    && chmod +x /app/entrypoint.sh
 
-EXPOSE 8000
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "--timeout", "30", "app:app"]
+# PORT is injected by Railway/Render; fallback 8000 for local Docker
+ENV PORT=8000
+
+EXPOSE $PORT
+CMD ["/app/entrypoint.sh"]
