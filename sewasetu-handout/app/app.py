@@ -416,6 +416,9 @@ def view_application(app_id):
     cur.close(); conn.close()
     if not row:
         abort(404)
+    # IDOR fix: ensure the application belongs to the logged-in citizen
+    if row[2] != session.get("portal_mobile"):
+        abort(403)
     return render_template("application.html", a=row, app_id=app_id)
 
 
