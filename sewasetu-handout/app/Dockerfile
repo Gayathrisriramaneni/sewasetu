@@ -13,8 +13,6 @@ RUN mkdir -p /var/sewasetu/uploads /var/sewasetu/uploads/ack /var/log/sewasetu \
     && crontab /app/deploy/crontab \
     && chmod +x /app/entrypoint.sh
 
-# PORT is injected by Railway/Render; fallback 8000 for local Docker
 ENV PORT=8000
-
 EXPOSE $PORT
-CMD ["/app/entrypoint.sh"]
+CMD ["/bin/bash", "/app/entrypoint.sh"]
