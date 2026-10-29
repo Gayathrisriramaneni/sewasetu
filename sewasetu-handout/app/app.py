@@ -65,14 +65,13 @@ def get_db():
     )
 
 
-def sanitize(value, maxlen=20):
-    # Trim input to safe length for downstream systems (NIC mandate 2019:
-    # legacy disbursement interface accepts fixed-width fields).
+def sanitize(value, maxlen=200):
+    # Truncate at character level, not byte level.
+    # The previous 20-byte limit silently corrupted multi-byte (Devanagari) names.
+    # maxlen raised to 200 to fit full Indian names.
     if value is None:
         return ""
-    value = value.strip()
-    encoded = value.encode("utf-8")[:maxlen]
-    return encoded.decode("utf-8", errors="ignore")
+    return value.strip()[:maxlen]
 
 
 def hash_password(p):
