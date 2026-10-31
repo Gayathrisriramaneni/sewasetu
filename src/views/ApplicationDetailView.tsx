@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Application } from '../types';
 import { downloadAcknowledgmentPdf } from '../utils/pdfGenerator';
-import { FileDown, ArrowLeft, LogOut, CheckCircle, Clock, XCircle, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { FileDown, ArrowLeft, LogOut, CheckCircle, Clock, XCircle, AlertTriangle, Eye, EyeOff, FileText, Download } from 'lucide-react';
+import { DocumentViewerModal } from '../components/DocumentViewerModal';
+import { triggerDocumentDownload } from '../utils/documentViewerHelper';
 
 interface ApplicationDetailViewProps {
   application: Application;
@@ -15,6 +17,7 @@ export const ApplicationDetailView: React.FC<ApplicationDetailViewProps> = ({
   navigate,
 }) => {
   const [showFullAccount, setShowFullAccount] = useState<boolean>(false);
+  const [isDocModalOpen, setIsDocModalOpen] = useState<boolean>(false);
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'APPROVED':
@@ -121,6 +124,48 @@ export const ApplicationDetailView: React.FC<ApplicationDetailViewProps> = ({
               <td className="font-mono">{application.ifsc}</td>
             </tr>
             <tr>
+              <th className="bg-slate-100 text-slate-700 font-semibold">Age Proof Document</th>
+              <td>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="flex items-center gap-1.5 text-xs text-slate-800 font-medium">
+                    <FileText className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                    <span className="truncate max-w-[200px]" title={application.doc_name || 'document.pdf'}>
+                      {application.doc_name || 'document.pdf'}
+                    </span>
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsDocModalOpen(true)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#0b3d6e] hover:bg-[#082a4d] text-white rounded text-xs font-semibold cursor-pointer shadow-sm transition-colors"
+                    title="View uploaded document"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>View Document</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => triggerDocumentDownload({
+                      docName: application.doc_name,
+                      docData: application.doc_data,
+                      docSize: application.doc_size,
+                      applicantName: application.applicant_name,
+                      applicationNo: application.application_no,
+                      dob: application.dob,
+                      village: application.village,
+                      block: application.block,
+                    })}
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded text-xs font-medium cursor-pointer transition-colors"
+                    title="Download document file"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr>
               <th className="bg-slate-100 text-slate-700 font-semibold">Status</th>
               <td>{getStatusBadge(application.status)}</td>
             </tr>
@@ -147,6 +192,22 @@ export const ApplicationDetailView: React.FC<ApplicationDetailViewProps> = ({
         </table>
       </div>
 
+      {application.status === 'REJECTED' && application.decision_reason && (
+        <div className="border border-red-300 rounded-lg overflow-hidden max-w-[640px] bg-red-50 shadow-sm p-4 space-y-2">
+          <div className="flex items-center gap-2 text-red-800 font-bold text-xs uppercase tracking-wide">
+            <XCircle className="w-4 h-4 text-red-600 shrink-0" />
+            <span>Statutory Rejection Reason / Justification</span>
+          </div>
+          <p className="text-xs text-red-900 bg-white p-3 rounded border border-red-200 leading-relaxed font-medium">
+            "{application.decision_reason}"
+          </p>
+          <div className="text-[11px] text-red-700 flex items-center justify-between pt-1">
+            <span>Decided by: <strong>{application.decided_by || 'Department Officer'}</strong></span>
+            <span>{application.decided_at ? new Date(application.decided_at).toLocaleString() : ''}</span>
+          </div>
+        </div>
+      )}
+
       <div className="pt-2 flex flex-wrap items-center gap-3">
         <button
           onClick={() => downloadAcknowledgmentPdf(application)}
@@ -163,6 +224,22 @@ export const ApplicationDetailView: React.FC<ApplicationDetailViewProps> = ({
           Home
         </button>
       </div>
+
+      {/* Document Viewer Modal for Citizen */}
+      <DocumentViewerModal
+        isOpen={isDocModalOpen}
+        onClose={() => setIsDocModalOpen(false)}
+        docInfo={{
+          docName: application.doc_name,
+          docData: application.doc_data,
+          docSize: application.doc_size,
+          applicantName: application.applicant_name,
+          applicationNo: application.application_no,
+          dob: application.dob,
+          village: application.village,
+          block: application.block,
+        }}
+      />
     </div>
   );
 };

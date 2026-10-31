@@ -69,12 +69,32 @@ describe('Sewa Setu - Phase 2 Systematic Defect Regression Suite', () => {
       expect(terminalApp?.status).toBe('APPROVED');
 
       // Attempting to reject an already approved application must fail
-      const result = store.rejectApplication(5, 'officer_admin', true);
+      const result = store.rejectApplication(5, 'officer_admin', true, 'Ineligible age criteria failure');
       expect(result.success).toBe(false);
       expect(result.error).toContain('already decided');
 
       // Must remain APPROVED
       expect(store.getApplicationById(5)?.status).toBe('APPROVED');
+    });
+
+    it('REGRESSION TEST: Rejection requires a meaningful statutory reason of at least 5 characters', () => {
+      // Attempt rejection with short reason (< 5 chars)
+      const shortRes = store.rejectApplication(1, 'officer_admin', true, 'Bad');
+      expect(shortRes.success).toBe(false);
+      expect(shortRes.error).toContain('minimum 5 characters');
+
+      // Attempt rejection with missing reason
+      const emptyRes = store.rejectApplication(1, 'officer_admin', true, '');
+      expect(emptyRes.success).toBe(false);
+
+      // Attempt rejection with valid meaningful reason
+      const validRes = store.rejectApplication(1, 'officer_admin', true, 'Ineligible age: applicant is under 60 years based on verified birth certificate.');
+      expect(validRes.success).toBe(true);
+
+      const rejectedApp = store.getApplicationById(1);
+      expect(rejectedApp?.status).toBe('REJECTED');
+      expect(rejectedApp?.decision_reason).toContain('Ineligible age');
+      expect(rejectedApp?.audit_trail?.some(a => a.action === 'REJECTED' && a.reason?.includes('Ineligible age'))).toBe(true);
     });
   });
 
@@ -416,4 +436,40 @@ describe('Sewa Setu - Phase 2 Systematic Defect Regression Suite', () => {
       expect(res.error).toContain('Duplicate applications are not permitted');
     });
   });
+
+  /* ========================================================================
+   * DEFECT 8: DOCUMENT VIEWER CANVAS & PROOF PREVIEW
+   * Ensures documents (PDFs, images, generated official archive records)
+   * provide explicit intrinsic dimensions and convert base64 data to Blobs.
+   * ======================================================================== */
+  describe('Defect 8: Document Viewer Canvas & Age Proof Preview', () => {
+    it('REGRESSION TEST: Generated SVG has explicit pixel dimensions to prevent 0x0 canvas collapse', async () => {
+      const { generateGovernmentProofDocumentSvg, isPdfDocument } = await import('../utils/documentViewerHelper');
+      const svgUri = generateGovernmentProofDocumentSvg({
+        applicantName: 'रामेश्वर प्रसाद शर्मा',
+        applicationNo: 'SSP26901823',
+        docName: 'school_leaving.pdf',
+        dob: '15/08/1952',
+        block: 'Sonari',
+        village: 'Sonari Town',
+      });
+
+      expect(svgUri).toContain('data:image/svg+xml');
+      // Root SVG MUST have explicit pixel width and height so browser img tags don't collapse
+      expect(svgUri).toContain('width%3D%22800%22');
+      expect(svgUri).toContain('height%3D%221050%22');
+      expect(isPdfDocument('school_leaving.pdf')).toBe(true);
+    });
+
+    it('REGRESSION TEST: Converts base64 PDF data URIs into native Blobs for safe browser embedding', async () => {
+      const { dataUriToBlob } = await import('../utils/documentViewerHelper');
+      const dummyPdfDataUri = 'data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrCg==';
+      const blob = dataUriToBlob(dummyPdfDataUri);
+
+      expect(blob).not.toBeNull();
+      expect(blob?.type).toBe('application/pdf');
+      expect(blob?.size).toBeGreaterThan(0);
+    });
+  });
 });
+
