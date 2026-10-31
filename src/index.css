@@ -1,0 +1,255 @@
+@import "tailwindcss";
+
+:root {
+  --portal-blue: #0b3d6e;
+  --portal-blue-dark: #072747;
+  --portal-blue-hover: #0d4a85;
+  --portal-saffron: #f7931e;
+}
+
+body {
+  font-family: Arial, Helvetica, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin: 0;
+  background-color: #f1f3f6;
+  border-top: 6px solid #f7931e;
+  color: #222222;
+  min-height: 100vh;
+}
+
+/* Accessibility: Text Scaling */
+.text-scale-normal {
+  font-size: 100%;
+}
+
+.text-scale-large {
+  font-size: 115%;
+  line-height: 1.6;
+}
+
+.text-scale-xlarge {
+  font-size: 130%;
+  line-height: 1.7;
+}
+
+/* Accessibility: High Contrast Mode */
+body.high-contrast {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+body.high-contrast .portal-container {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border: 2px solid #ffff00 !important;
+  box-shadow: none !important;
+}
+
+body.high-contrast .header-band {
+  background-color: #000000 !important;
+  border-bottom: 3px solid #ffff00 !important;
+}
+
+body.high-contrast .saffron-band {
+  background-color: #ffff00 !important;
+  height: 6px !important;
+}
+
+body.high-contrast .btn-gov {
+  background-color: #ffff00 !important;
+  color: #000000 !important;
+  border: 2px solid #ffffff !important;
+  font-weight: 700 !important;
+}
+
+body.high-contrast .btn-secondary {
+  background-color: #333333 !important;
+  color: #ffff00 !important;
+  border: 2px solid #ffff00 !important;
+}
+
+body.high-contrast table.tbl th {
+  background-color: #222222 !important;
+  color: #ffff00 !important;
+  border: 1px solid #ffffff !important;
+}
+
+body.high-contrast table.tbl td {
+  border: 1px solid #ffffff !important;
+  color: #ffffff !important;
+}
+
+body.high-contrast input,
+body.high-contrast select {
+  background-color: #111111 !important;
+  color: #ffffff !important;
+  border: 2px solid #ffff00 !important;
+}
+
+/* Custom styles matching the original Sewa Setu aesthetic */
+.header-band {
+  background-color: #0b3d6e;
+  color: #ffffff;
+}
+
+.saffron-band {
+  background-color: #f7931e;
+  height: 6px;
+}
+
+.portal-container {
+  max-width: 1376px;
+  width: calc(100% - 48px);
+  margin: 36px auto;
+  background: #ffffff;
+  padding: 42px;
+  border: 1px solid #d5dbe3;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  border-radius: 2px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  .portal-container {
+    width: calc(100% - 24px);
+    margin: 20px auto;
+    padding: 24px;
+    border-radius: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .portal-container {
+    width: calc(100% - 16px);
+    margin: 12px auto;
+    padding: 16px;
+    border-radius: 2px;
+  }
+}
+
+/* Buttons with WCAG compliant touch targets (min 44px) */
+.btn-gov {
+  background-color: #0b3d6e;
+  color: #ffffff;
+  border: none;
+  min-height: 48px;
+  padding: 10px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.btn-gov:hover {
+  background-color: #0d4a85;
+}
+
+.btn-gov:focus-visible {
+  outline: 3px solid #f7931e;
+  outline-offset: 2px;
+}
+
+.btn-gov:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: #555555;
+  color: #ffffff;
+}
+.btn-secondary:hover {
+  background-color: #404040;
+}
+
+.btn-danger {
+  background-color: #a33333;
+  color: #ffffff;
+}
+.btn-danger:hover {
+  background-color: #882222;
+}
+
+.btn-success {
+  background-color: #1b7e3c;
+  color: #ffffff;
+}
+.btn-success:hover {
+  background-color: #14622e;
+}
+
+table.tbl {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table.tbl td, table.tbl th {
+  border: 1px solid #ccd0d8;
+  padding: 10px 12px;
+  font-size: 14px;
+  text-align: left;
+}
+
+table.tbl th {
+  background-color: #f5f7fa;
+  font-weight: 600;
+  color: #333333;
+}
+
+.steps-nav {
+  font-size: 13px;
+  color: #666666;
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eef0f3;
+}
+
+.steps-nav b {
+  color: #0b3d6e;
+}
+
+.flash-msg {
+  background-color: #fdecea;
+  border: 1px solid #e57373;
+  color: #a33333;
+  padding: 12px 16px;
+  margin: 14px 0;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 3px;
+}
+
+.success-msg {
+  background-color: #e8f5e9;
+  border: 1px solid #81c784;
+  color: #2e7d32;
+  padding: 12px 16px;
+  margin: 14px 0;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 3px;
+}
+
+.note-text {
+  font-size: 13px;
+  color: #555555;
+}
+
+/* Accessible Form Inputs */
+input[type="text"],
+input[type="password"],
+select {
+  min-height: 44px;
+}
+
+input:focus-visible,
+select:focus-visible,
+button:focus-visible {
+  outline: 3px solid #0b3d6e;
+  outline-offset: 1px;
+}

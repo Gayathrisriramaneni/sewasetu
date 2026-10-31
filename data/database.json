@@ -1,0 +1,195 @@
+{
+  "version": 1,
+  "timestamp": "2026-10-31T08:52:44.004Z",
+  "applications": [
+    {
+      "id": 1,
+      "application_no": "SSP26842011",
+      "applicant_name": "Ramesh Chandra Das",
+      "mobile": "9876543210",
+      "email": "ramesh.das@example.com",
+      "dob": "12/04/1955",
+      "gender": "Male",
+      "marital_status": "Married",
+      "village": "Sonari Gaon",
+      "block": "Sonari",
+      "bank_account": "308291038472",
+      "ifsc": "SBIN0001234",
+      "status": "PENDING",
+      "submitted_at": "2026-10-13T08:52:43.813Z",
+      "doc_name": "voter_card_ramesh.pdf",
+      "doc_size": 450000
+    },
+    {
+      "id": 2,
+      "application_no": "SSP26731049",
+      "applicant_name": "ভবেশ শইকীয়া",
+      "mobile": "9864012345",
+      "email": "bhabesh.saikia@example.in",
+      "dob": "20/11/1958",
+      "gender": "Male",
+      "marital_status": "Married",
+      "village": "Rajapara Ward 3",
+      "block": "Rajapara",
+      "bank_account": "50100492817281",
+      "ifsc": "HDFC0000491",
+      "status": "PENDING",
+      "submitted_at": "2026-10-15T08:52:43.813Z",
+      "doc_name": "birth_cert_bhabesh.jpg",
+      "doc_size": 1200000
+    },
+    {
+      "id": 3,
+      "application_no": "SSP26901823",
+      "applicant_name": "रामेश्वर प्रसाद शर्मा",
+      "mobile": "9435098765",
+      "email": "rameshwar.sharma@example.com",
+      "dob": "15/08/1952",
+      "gender": "Male",
+      "marital_status": "Married",
+      "village": "Dhemaji Chariali",
+      "block": "Dhemaji Pathar",
+      "bank_account": "109283746501",
+      "ifsc": "UBIN0543210",
+      "status": "PENDING",
+      "submitted_at": "2026-10-27T08:52:43.814Z",
+      "doc_name": "school_leaving.pdf",
+      "doc_size": 850000
+    },
+    {
+      "id": 4,
+      "application_no": "SSP26514782",
+      "applicant_name": "Malati Devi",
+      "mobile": "9854033221",
+      "email": "malati.devi@example.org",
+      "dob": "10/02/1961",
+      "gender": "Female",
+      "marital_status": "Widowed",
+      "husband_name": "Late Bhaben Sarma",
+      "village": "Borgaon Milan Nagar",
+      "block": "Borgaon",
+      "bank_account": "201948572019",
+      "ifsc": "PUNB0192800",
+      "status": "PENDING",
+      "submitted_at": "2026-10-29T08:52:43.814Z",
+      "doc_name": "voter_card_malati.pdf",
+      "doc_size": 600000
+    },
+    {
+      "id": 5,
+      "application_no": "SSP26392018",
+      "applicant_name": "Birinchi Borah",
+      "mobile": "9706011223",
+      "email": "birinchi.borah@test.com",
+      "dob": "05/06/1950",
+      "gender": "Male",
+      "marital_status": "Married",
+      "village": "Namti Ali",
+      "block": "Namti",
+      "bank_account": "409281049281",
+      "ifsc": "SBIN0005432",
+      "status": "APPROVED",
+      "submitted_at": "2026-10-06T08:52:43.814Z",
+      "decided_at": "2026-10-13T08:52:43.814Z",
+      "decided_by": "officer_sonari",
+      "doc_name": "age_proof_borah.pdf",
+      "doc_size": 350000
+    },
+    {
+      "id": 6,
+      "application_no": "SSP26284910",
+      "applicant_name": "Anima Chetia",
+      "mobile": "9401055443",
+      "email": "anima.chetia@gov.in",
+      "dob": "30/09/1956",
+      "gender": "Female",
+      "marital_status": "Widowed",
+      "husband_name": "Late Jiten Chetia",
+      "village": "Khelua Gaon",
+      "block": "Khelua",
+      "bank_account": "019283746591",
+      "ifsc": "BARB0SONARI",
+      "status": "DEEMED_APPROVED",
+      "submitted_at": "2026-10-01T08:52:43.814Z",
+      "decided_at": "2026-10-16T08:52:43.814Z",
+      "decided_by": "RTPS-AUTO",
+      "doc_name": "voter_id_chetia.pdf",
+      "doc_size": 512000
+    },
+    {
+      "id": 7,
+      "application_no": "SSP26119842",
+      "applicant_name": "Tuleswar Barua",
+      "mobile": "9864299887",
+      "email": "tuleswar@barua.family",
+      "dob": "01/01/1968",
+      "gender": "Male",
+      "marital_status": "Married",
+      "village": "Rajapara Bazar",
+      "block": "Rajapara",
+      "bank_account": "998877665544",
+      "ifsc": "SBIN0009988",
+      "status": "REJECTED",
+      "submitted_at": "2026-10-19T08:52:43.814Z",
+      "decided_at": "2026-10-21T08:52:43.814Z",
+      "decided_by": "officer_rajapara",
+      "doc_name": "pan_card_barua.pdf",
+      "doc_size": 300000
+    }
+  ],
+  "users": [
+    {
+      "email": "ramesh.das@example.com",
+      "mobile": "9876543210",
+      "dob": "12/04/1955",
+      "password_hash": "12041955"
+    },
+    {
+      "email": "bhabesh.saikia@example.in",
+      "mobile": "9864012345",
+      "dob": "20/11/1958",
+      "password_hash": "20111958"
+    },
+    {
+      "email": "rameshwar.sharma@example.com",
+      "mobile": "9435098765",
+      "dob": "15/08/1952",
+      "password_hash": "15081952"
+    },
+    {
+      "email": "malati.devi@example.org",
+      "mobile": "9854033221",
+      "dob": "10/02/1961",
+      "password_hash": "10021961"
+    },
+    {
+      "email": "birinchi.borah@test.com",
+      "mobile": "9706011223",
+      "dob": "05/06/1950",
+      "password_hash": "05061950"
+    },
+    {
+      "email": "anima.chetia@gov.in",
+      "mobile": "9401055443",
+      "dob": "30/09/1956",
+      "password_hash": "30091956"
+    },
+    {
+      "email": "tuleswar@barua.family",
+      "mobile": "9864299887",
+      "dob": "01/01/1968",
+      "password_hash": "01011968"
+    }
+  ],
+  "sms": [
+    {
+      "id": 1,
+      "to": "ramesh.das@example.com",
+      "text": "Sewa Setu: application SSP26842011 received. Track at the status portal with email and password (DOB as DDMMYYYY).",
+      "type": "EMAIL",
+      "sent_at": 1793433163,
+      "delivery_at": 1793433165,
+      "delivered": true
+    }
+  ]
+}

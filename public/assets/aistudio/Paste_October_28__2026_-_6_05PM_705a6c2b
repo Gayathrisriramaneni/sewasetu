@@ -1,0 +1,735 @@
+# PROJECT: SEWA SETU — AI-ACCESSIBLE OLD-AGE PENSION SYSTEM
+
+## 1. YOUR ROLE
+
+Act as a senior software engineer, application security engineer, backend architect, database engineer, MCP protocol developer, QA engineer, DevOps engineer, and accessibility specialist.
+
+You are working on an inherited government old-age pension portal called Sewa Setu, belonging to the fictional Government of Purvanchal.
+
+I have provided a ZIP file containing the existing project source code, database schema, seeded citizen data, historical logs, deployment configuration, and project instructions.
+
+Your task is to investigate the existing system, fix its important bugs, improve security and accessibility, implement AI-agent integration through open standards, test everything, and prepare a real deployment.
+
+Do not merely explain what should be done. Inspect the supplied files, make concrete changes wherever the environment permits, run tests, diagnose failures, and provide working implementation files.
+
+If you cannot execute a task directly in your environment, explain the exact limitation and provide the necessary files, commands, and steps.
+
+Do not claim that a feature works unless you have tested it.
+
+## 2. MOST IMPORTANT RULE
+
+The existing Sewa Setu application and PostgreSQL database must remain the authoritative system of record.
+
+AI assistants must not independently decide who deserves a pension.
+
+AI assistants must not bypass eligibility checks, application validation, identity verification, official submission rules, or officer permissions.
+
+The citizen website, citizen-facing AI assistant, officer website, and officer-facing AI assistant must operate on the same official application records.
+
+If an application is created through an AI assistant, it must appear in the existing portal.
+
+If an application is created through the website, the citizen's authorized assistant must be able to retrieve its status through the official interface.
+
+Officer decisions must be recorded in the same database and reflected in the existing portal.
+
+Never create a second, disconnected database of pension applications.
+
+## 3. UNDERSTAND THE EXISTING REPOSITORY FIRST
+
+Inspect every relevant file in the provided ZIP archive.
+
+The repository includes components such as:
+
+- BRIEF.md
+- README.md
+- app/app.py
+- app/schema.sql
+- app/config/app.ini
+- app/requirements.txt
+- app/Dockerfile
+- app/deploy/
+- app/scripts/deemed_approval.py
+- app/templates/
+- seed/seed.sql
+- logs/sewasetu-logs-jan-jun-2026.tar.gz
+- smsgw/
+- docker-compose.yml
+
+First, produce a repository inventory and explain:
+
+1. The current application architecture.
+2. How the database is initialized.
+3. How the existing citizen application flow works.
+4. How mobile OTP verification works.
+5. How uploaded documents are stored.
+6. How applications are submitted.
+7. How citizen status tracking works.
+8. How officers access and decide applications.
+9. How automatic approval is scheduled.
+10. How the SMS gateway works.
+11. How the application is deployed.
+12. Which parts are broken, insecure, unreliable, or inaccessible.
+
+Inspect the actual contents of the supplied files instead of relying only on their filenames.
+
+Extract and analyze the historical logs. Look for recurring failures, abnormal response times, failed submissions, OTP problems, unusual access patterns, application-processing delays, and errors affecting citizens.
+
+Use SQL queries and controlled local experiments to validate important findings.
+
+Treat historical logs and database records as potentially sensitive. Do not publish real personal information in reports, screenshots, test output, or demonstrations.
+
+Do not delete existing citizen records or reset the production database.
+
+Do not assume that the development environment has production credentials or that the existing database can safely be modified.
+
+## 4. UNDERSTAND THE EXISTING BUSINESS RULES
+
+The scheme provides an old-age pension of ₹250 per month to eligible residents aged 60 or older.
+
+The supplied application contains configuration-driven age and deadline rules, and the briefing specifies automatic approval when an application has not received a decision within 15 days.
+
+Before changing any rule, identify its authoritative source in the supplied requirements and configuration.
+
+Implement these principles:
+
+- Eligibility checks must be performed on the server.
+- Applicants must satisfy the configured minimum age.
+- Dates must be validated consistently.
+- Invalid dates must not be silently interpreted incorrectly.
+- Required fields must be checked.
+- Bank account and IFSC fields must be validated appropriately.
+- Block names must be restricted to supported values.
+- Application submission must respect the actual scheme deadline.
+- Duplicate-submission prevention must be reliable.
+- The applicant must receive a real application number after successful submission.
+- Failed submissions must not produce false success messages.
+- Database failures must not leave partially created application records.
+- Existing citizen records must remain intact.
+
+The current UI may use multiple form steps. A new AI interface must not bypass the rules enforced by the final server-side submission handler.
+
+Review the duplicate-application rule carefully. Do not silently replace the current mobile-number rule with a different identity policy. Document the existing behavior and any proposed change.
+
+### Automatic approval
+
+Inspect app/scripts/deemed_approval.py, the scheduling configuration, the database timestamps, and the existing application statuses.
+
+Preserve the legally specified automatic-approval behavior.
+
+Verify the precise deadline calculation, timestamp handling, scheduler reliability, and behavior when an officer has already made a decision.
+
+Ensure that:
+
+- Only qualifying pending applications are automatically approved.
+- Applications are not approved prematurely.
+- Already approved or rejected applications are not overwritten.
+- Re-running the job does not create inconsistent results.
+- The decision is recorded consistently.
+- The citizen portal and officer portal display the resulting status.
+- AI agents cannot trigger or manipulate deemed approval.
+
+Do not allow an AI model to make a discretionary pension eligibility decision.
+
+## 5. PRIORITIZE THE TOP FIVE FIXES
+
+The supplied assessment expects five important fixes ranked by citizen impact.
+
+Do not select fixes based on how easy they are to demonstrate.
+
+Investigate the code, schema, logs, and reproducible behavior before ranking them.
+
+For each fix, record:
+
+1. The problem.
+2. Evidence supporting the finding.
+3. The affected citizen journey.
+4. The severity and likelihood of harm.
+5. The proposed correction.
+6. A regression test that fails before the correction.
+7. The same test passing after the correction.
+8. The relevant commit.
+9. Any remaining limitations.
+
+Create a prioritized engineering report.
+
+Investigate, at minimum, these areas:
+
+### A. Authentication and authorization
+
+Inspect the hardcoded administrator credentials.
+
+Replace insecure credential handling with a secure configuration mechanism suitable for the deployment environment.
+
+Do not commit real credentials, API keys, database passwords, or signing secrets.
+
+Verify that only authenticated and authorized officers can access the officer dashboard and make decisions.
+
+Do not confuse a general authenticated session with an administrator or officer session.
+
+### B. SQL injection
+
+Inspect all SQL queries, especially the citizen password-reset route.
+
+Use parameterized SQL queries consistently.
+
+Do not concatenate user input into SQL statements.
+
+Add regression tests for malicious-looking inputs and verify that the application remains safe.
+
+### C. Citizen data confidentiality
+
+Verify that citizens cannot view other people's:
+
+- Application details.
+- Bank information.
+- Date of birth.
+- Mobile number.
+- Uploaded documents.
+- Acknowledgment PDFs.
+
+Authorization must be checked on the server for every relevant resource.
+
+Do not assume that knowing an application ID grants access.
+
+### D. Input validation and Indian-language support
+
+Investigate the sanitize() function and all other transformations of citizen input.
+
+Ensure that names in Hindi and other supported Indian languages are stored and retrieved faithfully.
+
+Do not truncate names by arbitrary UTF-8 byte limits.
+
+Validate fields according to documented requirements without rejecting legitimate Indian-language names or harmless punctuation.
+
+Escape untrusted data appropriately when rendering HTML.
+
+### E. Submission integrity and reliability
+
+Investigate OTP handling, duplicate submissions, transaction boundaries, PDF generation, and database errors.
+
+Ensure that an application number is issued only after a successful official submission.
+
+Prevent duplicate submissions caused by retries or concurrent requests.
+
+Use database transactions and appropriate constraints where necessary.
+
+Preserve existing records and design any schema migration to be safe and reversible.
+
+Also inspect file uploads, session security, CSRF protection, rate limiting, error messages, logging, and resource usage.
+
+## 6. CITIZEN PERSONAS AND ACCESSIBILITY
+
+Create realistic personas before designing the new AI experience.
+
+At minimum, include the following:
+
+PERSONA 1: ELDERLY CITIZEN
+
+An applicant is over 60, has limited digital literacy, uses a basic smartphone, and does not understand technical terms.
+
+PERSONA 2: FAMILY MEMBER
+
+A grandson or daughter helps an elderly relative using an AI assistant on a shared phone.
+
+PERSONA 3: COMMON SERVICE CENTRE OPERATOR
+
+An operator assists multiple citizens and must not accidentally mix their personal information or applications.
+
+PERSONA 4: CITIZEN WITH LIMITED CONNECTIVITY
+
+The citizen experiences slow connections, interrupted sessions, or repeated attempts to submit the same application.
+
+PERSONA 5: BLOCK OFFICER
+
+An authorized officer handles a queue of pending applications, needs the relevant evidence, and must record a decision under their own identity.
+
+For every persona, document:
+
+- Their objective.
+- Their constraints.
+- Likely mistakes.
+- Privacy risks.
+- Failure scenarios.
+- Expected system behavior.
+- How success will be measured.
+
+Design for accessibility, understandable language, mobile devices, keyboard navigation, readable error messages, and low-bandwidth usage.
+
+Use plain language rather than technical error codes.
+
+Do not make the citizen repeat the entire form after a recoverable error.
+
+Do not silently discard entered information.
+
+Where appropriate, allow the citizen to review all details before submission.
+
+Make it clear when an action is a draft, when it has been submitted, and when the official portal has confirmed the application number.
+
+## 7. REQUIRED AI INTEGRATION
+
+Implement two separate MCP interfaces if the project environment supports them.
+
+Use a maintained official MCP SDK compatible with the chosen language and protocol version.
+
+Follow the current MCP specification for tool discovery, tool execution, errors, authentication, and transport.
+
+Do not invent a custom protocol and call it MCP.
+
+Keep the interfaces separate because citizen actions and officer actions require different privileges.
+
+### MCP 1: CITIZEN ASSISTANT
+
+Purpose: Help citizens or their authorized helpers understand the scheme, prepare an application, submit it through the official application service, and follow its progress.
+
+Potential tools include:
+
+1. get_scheme_information
+2. get_supported_blocks
+3. start_application
+4. get_application_requirements
+5. validate_application_draft
+6. save_application_draft, if supported safely
+7. submit_application
+8. get_my_application_status
+9. get_application_history, if authorized and supported
+
+These are proposed tool names, not permission to invent unsupported backend behavior. Map each tool to the actual application capabilities.
+
+Tool behavior:
+
+- Read scheme information from an authoritative source.
+- Explain the age requirement and applicable deadline accurately.
+- Never invent application rules or claim that a citizen is eligible without sufficient verified information.
+- Collect only the information needed for the requested operation.
+- Ask for clarification when a required field is ambiguous.
+- Validate the draft before submission.
+- Present a human-readable review of the application before a consequential submission.
+- Obtain explicit confirmation before submitting.
+- Submit through the same authoritative business logic used by the website.
+- Return the genuine application number and confirmed status.
+- Never fabricate a successful submission.
+- If the service fails, clearly report that submission was not confirmed.
+- Support safe retries without creating duplicate applications.
+- Retrieve application status only after appropriate authentication and ownership checks.
+
+Mobile OTP verification must remain under the official server's control.
+
+Do not let the model decide whether an OTP is valid.
+
+Do not ask users to paste their OTP into model prompts or logs. Use an appropriately protected authentication flow.
+
+If an MCP client cannot safely complete a required verification step, provide a secure handoff to the existing portal rather than bypassing authentication.
+
+A helper must not be treated as the applicant merely because they are using the same phone.
+
+Where the system cannot verify authority to act for another person, explain the limitation and require an appropriate verification or assisted-service process.
+
+### MCP 2: OFFICER ASSISTANT
+
+Purpose: Help authorized block officers review applications, understand the processing queue, identify missing information, and record decisions.
+
+Potential tools include:
+
+1. get_officer_queue
+2. get_application_summary
+3. get_application_evidence
+4. check_processing_deadline
+5. record_officer_decision
+6. get_decision_history
+
+Map these tools to actual server capabilities.
+
+Security requirements:
+
+- Every officer action requires authenticated officer identity.
+- Every action requires the appropriate authorization.
+- Block-level restrictions must be enforced where applicable.
+- Application records must be fetched from the official database.
+- Only necessary personal information should be exposed.
+- Approval and rejection must use the official application service.
+- Each decision must record the authorized officer's identity and timestamp.
+- A rejection must include a permitted reason if required by the official process.
+- Decisions must not overwrite an existing decision without a documented, authorized correction workflow.
+- AI-generated summaries must be distinguished from official evidence.
+- The officer must explicitly confirm the decision before it is recorded.
+- The AI assistant must never approve or reject an application autonomously.
+
+The system should help officers do their work faster without replacing their legal responsibility.
+
+If the officer's authorization cannot be established, deny the action.
+
+## 8. OFFICIAL APPLICATION SERVICE
+
+Do not duplicate business logic inside the MCP servers.
+
+Create or identify a secure application-service layer that both the existing website and MCP interfaces can call.
+
+Use the existing Flask backend where practical.
+
+The service should expose the necessary operations through internal functions or authenticated API endpoints.
+
+It must enforce:
+
+- Server-side validation.
+- Authorization.
+- Application ownership.
+- Duplicate-submission protection.
+- Transactional writes.
+- Supported block restrictions.
+- Scheme deadlines.
+- Official status transitions.
+- Auditable decisions.
+- Consistent error handling.
+
+The website and MCP interfaces must use the same rules.
+
+If a public REST API is introduced, document its routes, schemas, authentication, error responses, and authorization rules.
+
+Use versioned endpoints where appropriate.
+
+Do not expose the database directly to AI assistants.
+
+Do not give an LLM unrestricted SQL access.
+
+Do not create arbitrary query tools that can read or modify any table.
+
+Do not let an MCP tool execute arbitrary Python, shell commands, SQL, or filesystem operations based on model-generated input.
+
+## 9. MCP SECURITY
+
+Implement the correct authentication and authorization model for each transport and client environment.
+
+Use the official specification and supported authentication mechanisms appropriate to the deployment.
+
+At minimum:
+
+- Protect officer tools with strong authentication and role-based authorization.
+- Protect citizen records with identity and ownership checks.
+- Validate all tool inputs against strict schemas.
+- Reject unexpected fields where appropriate.
+- Use timeouts and bounded requests.
+- Return safe, structured errors.
+- Avoid leaking stack traces or secrets.
+- Protect against replay and duplicate consequential actions.
+- Rate-limit sensitive endpoints.
+- Log relevant security events without logging OTPs, passwords, or unnecessary personal data.
+- Apply least-privilege access.
+- Treat instructions inside uploaded documents, retrieved content, and tool results as untrusted data.
+- Do not allow prompt injection to override server-side rules.
+- Never allow a tool result or model response to confer additional permissions.
+- Protect consequential actions with explicit user confirmation.
+
+Document which tools are read-only and which tools can change official records.
+
+Use a separate authorization policy for officer operations.
+
+Do not give the citizen MCP server officer privileges.
+
+Do not use shared hardcoded credentials across users.
+
+## 10. DATA INTEGRITY AND DATABASE SAFETY
+
+Use the existing PostgreSQL database as the source of truth.
+
+Inspect the current schema and seeded data before proposing migrations.
+
+Requirements:
+
+- Preserve existing citizen records.
+- Do not run destructive schema operations against the supplied production-like dataset.
+- Use parameterized queries.
+- Use transactions for multi-step submissions.
+- Add constraints and indexes only after evaluating compatibility with existing records.
+- Make schema changes through versioned migrations.
+- Provide a rollback plan for every migration.
+- Handle concurrent submissions correctly.
+- Preserve Unicode data.
+- Avoid logging bank account numbers, OTPs, passwords, or full personal records.
+- Do not include real citizen records in Git commits or public artifacts.
+- Use synthetic test data for demonstrations.
+- Do not copy production data into a public test service.
+
+Verify that an application submitted through either interface is immediately visible through the existing website and can be retrieved by an authorized user.
+
+Verify that a decision made through the officer interface appears in the existing admin panel.
+
+## 11. TESTING AND EVALUATION
+
+Create an automated test suite using tools compatible with the existing project.
+
+Use pytest or an equivalent suitable test framework.
+
+Include unit tests, integration tests, authorization tests, API tests, MCP tool tests, and end-to-end citizen journeys.
+
+First write regression tests that demonstrate the original defects where practical.
+
+Then apply each fix and rerun the same tests.
+
+Do not modify a test merely to make a broken implementation pass.
+
+### Citizen journey tests
+
+Test:
+
+1. An eligible applicant completing the normal application flow.
+2. An applicant younger than the minimum age.
+3. A valid applicant entering an Indian-language name.
+4. An applicant entering an invalid date.
+5. An applicant choosing an unsupported block.
+6. A missing required field.
+7. An invalid or expired OTP.
+8. An interrupted session.
+9. An application submitted twice.
+10. A network timeout after submission.
+11. A file that is not a PDF.
+12. A file that exceeds the configured size limit.
+13. A citizen trying to access another applicant's record.
+14. A citizen trying to retrieve another applicant's acknowledgment PDF.
+15. A citizen checking an existing application's status.
+16. An application that is pending beyond the prescribed processing period.
+17. A decision made by an authorized officer.
+18. An unauthorized user attempting to make a decision.
+
+### MCP evaluation tests
+
+Test:
+
+- Tool discovery.
+- Valid tool input.
+- Invalid tool input.
+- Unsupported block values.
+- Missing fields.
+- Expired authentication.
+- Missing authorization.
+- Cross-citizen access attempts.
+- Unauthorized officer actions.
+- Explicit confirmation before submission.
+- Duplicate submission retries.
+- Database unavailability.
+- MCP transport failure.
+- Malformed tool responses.
+- Hallucinated application numbers.
+- Hallucinated scheme rules.
+- Prompt injection attempts.
+- Inconsistent information from retrieved content.
+- A successful website submission followed by MCP status retrieval.
+- A successful MCP submission followed by website verification.
+- An officer decision through MCP followed by admin-panel verification.
+
+The model must not be considered authoritative merely because it gives a plausible answer.
+
+For important claims, retrieve data from the official application service and return the real result.
+
+### Deemed-approval tests
+
+Verify that:
+
+- An application is not automatically approved before the correct deadline.
+- A qualifying overdue pending application is processed correctly.
+- A rejected application is not overwritten.
+- An already approved application is not processed again.
+- Repeated scheduler execution is safe.
+- The recorded decision is consistent with the official rules.
+
+### Load and reliability
+
+Measure baseline response times and behavior under concurrent requests.
+
+Test duplicate submission races and database connection failures.
+
+Run load tests against a controlled environment, not against unrelated infrastructure.
+
+Use realistic request volumes based on the supplied evidence.
+
+Document performance before and after the fixes.
+
+Do not claim that the system supports a particular load unless a reproducible test demonstrates it.
+
+## 12. DEPLOYMENT
+
+Use the existing Docker Compose setup as the starting point.
+
+Inspect the current Dockerfiles, dependencies, configuration, volumes, database initialization, scheduler, and SMS gateway before modifying them.
+
+Prepare a reproducible deployment that includes:
+
+- The Flask application.
+- PostgreSQL.
+- Persistent database storage.
+- Persistent uploaded documents.
+- Persistent application logs.
+- The SMS gateway.
+- The deemed-approval scheduler.
+- The two MCP interfaces if required.
+- Health checks.
+- Restart policies.
+- Appropriate service dependencies.
+- Secure secret configuration.
+- Database readiness checks.
+- Backup and restoration instructions.
+- A documented upgrade procedure.
+
+Do not expose PostgreSQL or internal services unnecessarily.
+
+Expose only the required public application endpoints.
+
+The SMS gateway must not become an unrestricted public proxy.
+
+Ensure the application and scheduler share the required database and configuration.
+
+Make sure the deployed application starts reliably after a server restart.
+
+Do not use an ephemeral development environment as the final host for a service that must remain available.
+
+Do not publish environment files, database dumps, citizen data, or secrets.
+
+### Deployment verification
+
+After deployment, verify:
+
+1. The public URL responds successfully.
+2. The homepage loads.
+3. The application form opens.
+4. The SMS gateway works in the intended assessment environment.
+5. Database connectivity works.
+6. The citizen submission flow completes.
+7. The generated application number is genuine.
+8. The application appears in the existing admin panel.
+9. The citizen can retrieve their own status.
+10. An authorized officer can inspect the application.
+11. An officer decision appears in the database and website.
+12. The scheduler is operating.
+13. Existing seeded records remain intact.
+14. Restarting the application does not erase data.
+15. The health endpoint does not reveal sensitive information.
+
+If real deployment credentials or a cloud account are required, ask me to perform the necessary authentication or provide the appropriate authorized connection.
+
+Never invent a deployed URL or claim deployment success without verifying it.
+
+## 13. GIT AND ENGINEERING HISTORY
+
+Create a clean Git repository with a meaningful commit history.
+
+Do not squash all work into one commit.
+
+Use a logical sequence such as:
+
+1. Add failing regression tests for the highest-impact defect.
+2. Fix the defect.
+3. Add and fix the next defect.
+4. Continue in impact-priority order.
+5. Add integration and MCP tests.
+6. Add deployment and operational documentation.
+
+Each fix should have a clear commit message.
+
+Ensure that tests can be run from a fresh clone.
+
+Do not commit production data, environment files, access tokens, passwords, or unnecessary generated files.
+
+Inspect .gitignore and Docker configuration.
+
+Provide instructions for creating a private GitHub repository and granting the required assessor read-only access.
+
+## 14. REQUIRED DELIVERABLES
+
+Produce the following:
+
+A. Repository assessment report.
+
+B. Top-five-fixes report ranked by citizen impact.
+
+C. Corrected application source code.
+
+D. Database migrations, if necessary.
+
+E. Automated regression and integration tests.
+
+F. Citizen MCP implementation.
+
+G. Officer MCP implementation.
+
+H. MCP tool documentation and example requests.
+
+I. Security and authorization documentation.
+
+J. Persona definitions and evaluation scenarios.
+
+K. A reproducible deployment configuration.
+
+L. A deployment guide with exact commands.
+
+M. A list of environment variables and instructions for configuring them securely.
+
+N. Test results, including failures that remain unresolved.
+
+O. A Git commit plan and repository checklist.
+
+P. A three-minute Loom demonstration script.
+
+Q. A final acceptance checklist.
+
+## 15. FINAL ACCEPTANCE CRITERIA
+
+The project is not complete merely because the frontend looks good.
+
+Completion requires evidence that:
+
+- The original portal still works.
+- Existing citizen records are preserved.
+- The highest-impact defects have been corrected.
+- Regression tests demonstrate the fixes.
+- Citizen data cannot be accessed by unauthorized users.
+- Unauthorized users cannot approve or reject applications.
+- Indian-language names are preserved.
+- The citizen MCP follows the official application workflow.
+- The officer MCP respects officer permissions.
+- Both interfaces use the authoritative application service.
+- Website and MCP submissions are visible in the same system.
+- Automatic approval follows the configured legal rule.
+- The deployed application is reachable and persistent.
+- The deployment matches the tested source code.
+- The documentation explains limitations honestly.
+
+If any requirement is not met, identify it explicitly instead of marking it complete.
+
+## 16. HOW YOU MUST WORK
+
+Use the following phases in order.
+
+PHASE 1 — INSPECT:
+Read the source, configuration, schema, seed structure, logs, and deployment files.
+
+PHASE 2 — BASELINE:
+Run the existing application and tests where possible. Record the initial failures.
+
+PHASE 3 — PRIORITIZE:
+Select and justify the top five fixes based on citizen impact and evidence.
+
+PHASE 4 — REPAIR:
+Implement one high-impact fix at a time, with regression tests and a meaningful commit.
+
+PHASE 5 — BUILD MCP:
+Implement the citizen and officer interfaces with strict authentication, authorization, and validation.
+
+PHASE 6 — EVALUATE:
+Run the citizen, officer, security, MCP, data-integrity, and deemed-approval scenarios.
+
+PHASE 7 — DEPLOY:
+Prepare and verify a persistent deployment.
+
+PHASE 8 — DOCUMENT:
+Produce the reports, deployment instructions, persona evaluations, and Loom script.
+
+Start with PHASE 1.
+
+Do not rewrite the entire project before understanding it.
+
+Do not stop after producing a plan if the tools available to you can actually inspect or edit the files.
+
+At the end of each phase, summarize the evidence, files changed, commands executed, tests passed, tests failed, and unresolved risks.
+
+Ask me for clarification only when a genuine decision or external permission is required. Otherwise, use the existing source and explicit requirements to proceed.
+
+Begin by inspecting the uploaded repository and reporting the five most serious issues supported by evidence.

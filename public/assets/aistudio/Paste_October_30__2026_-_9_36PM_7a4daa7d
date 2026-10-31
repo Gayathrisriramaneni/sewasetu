@@ -1,0 +1,735 @@
+# PROJECT: SEVA SETU — MOBILE NUMBER + OTP AUTHENTICATION ACROSS THE ENTIRE APPLICATION
+
+## 1. YOUR ROLE
+
+Act as a senior full-stack developer, backend engineer, database engineer, application security engineer, UI/UX designer, QA engineer, and MCP integration engineer.
+
+I am developing the Seva Setu old-age pension application for my Bharat Digital Fellowship assignment.
+
+The existing application currently uses email-based login in some or all parts of the application.
+
+I want to change the citizen authentication and access workflow to use:
+
+**Mobile number → OTP verification → authenticated citizen session → pension application or application-status tracking.**
+
+This must be implemented throughout the existing application, not only on the login page.
+
+Inspect the actual repository before modifying any files. Preserve existing working functionality, application records, officer workflows, and business rules.
+
+Do not replace the entire application unnecessarily.
+
+## 2. MAIN OBJECTIVE
+
+Make the citizen's verified mobile number the primary authentication method for all citizen-facing workflows.
+
+Citizens must be able to:
+
+1. Open the Seva Setu portal.
+2. Enter their mobile number.
+3. Request an OTP.
+4. Receive the OTP through the configured SMS service.
+5. Enter the OTP.
+6. Verify the OTP securely.
+7. Access the authenticated citizen portal.
+8. Apply for the old-age pension.
+9. Save or resume an application draft if the existing application supports it.
+10. Submit the pension application.
+11. Receive the official application number after successful submission.
+12. Check the status of their application using mobile-number-based authentication.
+13. View their authorized application history.
+14. Log out securely.
+
+The same identity and authentication rules must apply when a citizen uses a compatible AI assistant connected through the citizen-facing MCP server.
+
+The officer-facing portal and officer MCP must retain appropriate officer authentication and authorization. Do not convert officer access to citizen authentication or grant citizen permissions to officers automatically.
+
+## 3. IMPORTANT BUSINESS RULES
+
+Preserve the existing Seva Setu scheme requirements.
+
+- Monthly pension amount: ₹250.
+- Minimum age: 60 years.
+- Residence: an eligible supported block in Purvanchal, according to the existing scheme configuration.
+- Mobile verification: required before protected citizen actions.
+- Required personal details, bank information, and age proof must be validated.
+- An application number must be returned only after successful application creation.
+- Applications submitted through the portal and citizen MCP must use the same official database.
+- Authorized officers must be able to process applications through their existing official workflow.
+- Pending applications must follow the assignment's 15-day automatic-approval rule.
+- The AI must never bypass eligibility, identity verification, validation, or authorization.
+
+Do not invent additional eligibility rules.
+
+## 4. PHASE 1 — INSPECT THE CURRENT AUTHENTICATION SYSTEM
+
+Before making changes, inspect the complete repository.
+
+Find every place that currently uses email authentication, including:
+
+- Login pages.
+- Registration pages.
+- Password-based login.
+- Email verification.
+- Password reset.
+- Session creation.
+- Session validation.
+- Logout.
+- Protected citizen routes.
+- Pension application routes.
+- Application-status routes.
+- Application-history routes.
+- API endpoints.
+- Database user tables.
+- Foreign-key relationships.
+- Cookies and session storage.
+- Frontend authentication state.
+- Backend authentication middleware.
+- Citizen MCP authentication.
+- Officer authentication.
+- Tests.
+- Environment variables.
+- SMS gateway configuration.
+
+Search for email-based authentication across the entire codebase.
+
+Identify whether the existing system uses email as:
+
+1. A login credential.
+2. A user identifier.
+3. A required personal-information field.
+4. An application contact field.
+5. An account-recovery method.
+6. An officer account credential.
+
+These uses are not necessarily equivalent.
+
+Do not remove an email field that is legally or operationally required without confirming the requirement.
+
+Create an authentication dependency map that shows which frontend pages, backend routes, database tables, and MCP tools depend on the existing email-based system.
+
+Do not modify files during this initial inspection.
+
+## 5. PHASE 2 — DESIGN THE MOBILE AUTHENTICATION FLOW
+
+Implement the following citizen authentication flow.
+
+### Step 1: Open the application
+
+Display a clear mobile-first login screen.
+
+Suggested heading:
+
+"Welcome to Seva Setu"
+
+Suggested description:
+
+"Enter your mobile number to securely access your pension application."
+
+Show:
+
+- Mobile number field.
+- Country code selector or an appropriately configured default for India.
+- Send OTP button.
+- Clear validation messages.
+- Privacy notice.
+- Accessible text and controls.
+
+The interface must work on mobile phones, desktop browsers, and public kiosks.
+
+### Step 2: Enter the mobile number
+
+For Indian mobile numbers:
+
+- Accept an appropriately formatted Indian mobile number.
+- Support the selected country code format consistently.
+- Normalize the number before storing or comparing it.
+- Reject malformed numbers.
+- Avoid accepting arbitrary characters.
+- Display helpful errors.
+- Do not assume a mobile number is valid merely because it has ten digits.
+- Use a reliable phone-number validation approach where appropriate.
+
+Do not store multiple formatting variants of the same number as separate identities.
+
+Use a consistent normalized representation, preferably E.164 where supported by the existing architecture.
+
+### Step 3: Request OTP
+
+When the citizen selects "Send OTP":
+
+1. Validate the mobile number on the server.
+2. Apply rate limits.
+3. Generate a cryptographically secure, short-lived OTP.
+4. Store only an appropriately protected OTP verifier or hash where feasible.
+5. Associate the OTP challenge with the mobile number and a unique challenge identifier.
+6. Set an expiry time.
+7. Record the challenge's purpose and status.
+8. Send the OTP through the configured SMS provider.
+9. Return a generic, safe response that does not unnecessarily reveal whether a mobile number is already registered.
+10. Display the OTP entry screen.
+
+Do not expose the OTP in the browser response, production logs, application database records, URL parameters, or AI conversation.
+
+Do not generate a predictable OTP.
+
+Do not send real SMS messages during automated tests unless a test provider is explicitly configured.
+
+If the SMS provider fails, show a clear error and do not claim the OTP was sent.
+
+### Step 4: Enter OTP
+
+Display:
+
+- OTP input field.
+- Verify OTP button.
+- Resend OTP option with a cooldown.
+- Remaining-time information, if appropriate.
+- Clear error messages.
+- Option to correct the mobile number.
+
+The OTP interface must support keyboard navigation, mobile input, screen readers, and paste where appropriate.
+
+Do not require users to solve unnecessary interaction puzzles that would be difficult for elderly citizens.
+
+### Step 5: Verify OTP
+
+On the backend, verify:
+
+- The challenge exists.
+- The challenge belongs to the submitted mobile number.
+- The OTP matches the expected verifier.
+- The challenge has not expired.
+- The challenge has not already been used.
+- The attempt limit has not been exceeded.
+- The challenge has not been revoked.
+- The request satisfies applicable rate limits.
+
+On success:
+
+- Mark the OTP challenge as consumed.
+- Establish the authenticated citizen identity.
+- Create or rotate the authenticated session securely.
+- Bind the session to the verified mobile identity.
+- Record the authentication event without logging the OTP.
+- Redirect the citizen to the correct authenticated page.
+
+Do not trust a frontend flag such as `isVerified = true`.
+
+Do not trust an OTP-verification result supplied by the AI model.
+
+Do not allow a previously used OTP to authenticate another request.
+
+## 6. PHASE 3 — HANDLE NEW AND EXISTING CITIZENS
+
+The system must work for both existing and new citizens.
+
+### Existing citizens
+
+Inspect the current database and determine how existing citizen accounts are identified.
+
+Implement a safe migration or account-linking strategy.
+
+Requirements:
+
+- Preserve existing citizen records.
+- Preserve existing application records.
+- Preserve application ownership.
+- Avoid creating duplicate accounts for the same person.
+- Do not automatically merge accounts based only on a matching name.
+- Do not assume that an email address proves ownership of a mobile number.
+- Do not automatically grant access to an old account simply because someone can verify a newly entered mobile number.
+- Establish a safe account-linking process for citizens whose mobile number is not already associated with their account.
+- Verify ownership of the mobile number before linking it.
+- Where existing identity verification is insufficient, require an appropriate recovery or assisted-verification process.
+- Preserve historical application identifiers and audit records.
+
+Do not delete the existing email field or old user records as part of this change.
+
+### New citizens
+
+If the verified mobile number does not correspond to an existing citizen account:
+
+- Follow the existing registration requirements.
+- Create a citizen account only through a secure server-side process.
+- Associate it with the verified mobile number.
+- Collect required registration details.
+- Prevent duplicate accounts and race conditions.
+- Do not create a pension application automatically just because authentication succeeded.
+
+If a safe account-linking or recovery flow cannot be implemented from the available code and requirements, document the limitation and ask for the missing policy decision.
+
+## 7. PHASE 4 — MAKE MOBILE OTP AUTHENTICATION AVAILABLE THROUGHOUT THE PORTAL
+
+Inspect every citizen-facing page and route.
+
+Update all applicable workflows.
+
+### A. Citizen login
+
+Replace email-based citizen login with mobile-number-based OTP login.
+
+Remove email as a mandatory citizen login credential wherever it is not required for another legitimate purpose.
+
+### B. Citizen registration
+
+Use the verified mobile number as the primary citizen identity.
+
+Collect any additional registration fields required by the existing scheme.
+
+Do not collect unnecessary personal information.
+
+### C. Apply for pension
+
+Before starting a protected application:
+
+- Verify the citizen's mobile number.
+- Establish the authenticated session.
+- Associate the application with the server-authenticated citizen identity.
+- Collect and validate the required application information.
+- Collect bank details securely.
+- Require age proof.
+- Apply all official eligibility rules.
+- Show a review screen before submission.
+- Obtain explicit submission confirmation.
+- Create the application through the official backend.
+- Return the real application number only after confirmed persistence.
+
+Do not use a mobile number supplied in a form as proof of the applicant's identity.
+
+Do not permit the frontend or AI assistant to change the application owner by submitting another citizen's identifier.
+
+### D. Application-status tracking
+
+Update the application-status page to support mobile-number-based access.
+
+Expected flow:
+
+1. Citizen enters their mobile number.
+2. Citizen verifies the mobile number using OTP.
+3. Backend establishes the authenticated session.
+4. Citizen sees only the applications they are authorized to access.
+5. Citizen selects an application.
+6. Portal displays the actual persisted status and relevant non-sensitive information.
+
+Do not return application information based only on a mobile number entered into a public lookup form.
+
+Do not expose bank details, identity documents, or unnecessary personal information.
+
+Avoid revealing whether another citizen has applied for the scheme.
+
+### E. Application history
+
+After successful mobile verification, show only applications belonging to the authenticated citizen or records for which the citizen has been explicitly authorized.
+
+### F. Session expiration
+
+If the session expires:
+
+- Protect sensitive pages.
+- Ask the citizen to verify again.
+- Preserve non-sensitive form progress where safe.
+- Do not silently authenticate the user.
+- Do not display another user's information on a shared device.
+
+### G. Logout
+
+Implement secure logout.
+
+Requirements:
+
+- Invalidate the server-side session where applicable.
+- Clear authentication cookies safely.
+- Prevent access to protected pages through stale cached content where practical.
+- Clear sensitive data from shared-device UI state.
+- Return the citizen to the public page.
+
+## 8. PHASE 5 — UPDATE THE DATABASE SAFELY
+
+Inspect the existing schema before changing it.
+
+Determine whether the application has:
+
+- A citizen table.
+- An officer table.
+- Email-based user identifiers.
+- Phone-number fields.
+- OTP challenge records.
+- Application ownership fields.
+- Session or token records.
+- Foreign keys.
+- Unique constraints.
+
+Implement only the necessary schema changes.
+
+Requirements:
+
+- Use reversible or carefully controlled migrations.
+- Preserve existing records and foreign keys.
+- Add appropriate uniqueness constraints to normalized mobile identifiers.
+- Handle duplicate or unverified mobile numbers.
+- Store OTP challenge metadata securely.
+- Store OTP expiry and consumption status.
+- Use appropriate indexes.
+- Prevent race conditions when registering or linking accounts.
+- Do not store plaintext OTPs.
+- Do not log sensitive authentication data.
+- Avoid storing unnecessary personal information.
+- Never reset the database to make the migration easier.
+
+Test the migration on a backup or synthetic development database first.
+
+If production data migration is required, provide a backup and rollback plan.
+
+## 9. PHASE 6 — SECURE OTP AND SESSION MANAGEMENT
+
+Implement security controls suitable for a public service.
+
+### OTP security
+
+- Cryptographically secure OTP generation.
+- Short expiry time.
+- Single-use challenges.
+- Maximum verification attempts.
+- Resend cooldown.
+- Per-mobile rate limiting.
+- Per-IP or equivalent abuse controls.
+- Protection against OTP guessing.
+- Protection against OTP replay.
+- Protection against SMS-spam abuse.
+- Invalidation of superseded challenges where appropriate.
+- Generic authentication errors.
+- Safe cleanup of expired challenges.
+- No plaintext OTP logging.
+- No OTP returned to production clients except through the configured delivery channel.
+
+Choose concrete values based on the existing application's needs, provider restrictions, and security requirements. Document the selected values.
+
+### Session security
+
+Use an authentication mechanism appropriate to the existing application.
+
+Where cookie-based sessions are appropriate:
+
+- Use Secure cookies over HTTPS.
+- Use HttpOnly.
+- Use an appropriate SameSite policy.
+- Rotate the session after successful authentication.
+- Protect against CSRF where relevant.
+- Set appropriate session expiration.
+- Invalidate sessions on logout.
+- Avoid putting authentication tokens in URLs.
+- Enforce authorization on the backend for every protected route.
+
+If the application uses a different established authentication architecture, adapt these controls appropriately.
+
+### SMS provider
+
+Inspect the existing SMS gateway integration.
+
+Use the configured provider's secure API or documented integration.
+
+- Keep API keys in environment variables or the provider's secret manager.
+- Never expose provider credentials in frontend code.
+- Do not hardcode real credentials.
+- Do not use a development SMS console in production.
+- Do not report OTP delivery success if the provider request failed.
+- Provide a safe local test mode with synthetic OTPs.
+- Ensure test-mode behavior cannot accidentally be enabled in production.
+
+## 10. PHASE 7 — UPDATE THE CITIZEN MCP AUTHENTICATION
+
+The citizen-facing MCP must follow the same identity rules as the portal.
+
+Inspect the actual MCP implementation and supported authentication capabilities.
+
+Requirements:
+
+- Require an appropriate authenticated identity for protected citizen operations.
+- Support secure mobile OTP verification through an appropriate browser or authentication handoff where necessary.
+- Do not assume the AI assistant can securely collect or deliver OTPs without a supported mechanism.
+- Do not expose OTPs to model logs.
+- Do not trust model-supplied mobile numbers as proof of identity.
+- Bind application operations to the authenticated citizen identity.
+- Verify ownership before returning status or history.
+- Require explicit confirmation before submission.
+- Prevent duplicate submissions.
+- Return actual backend results only.
+- Enforce the same eligibility and validation rules as the portal.
+
+Where a compatible remote MCP client requires a browser-based identity flow, implement or document a secure supported handoff.
+
+Do not invent an authentication protocol or bypass the identity provider.
+
+If the current MCP client cannot support the required authentication mechanism, identify the limitation and propose a compatible approach.
+
+## 11. PHASE 8 — KEEP OFFICER AUTHENTICATION SEPARATE
+
+Do not replace the officer login with the citizen mobile OTP flow unless the actual officer identity policy explicitly requires it.
+
+Keep officer authentication, roles, and permissions separate.
+
+Ensure that:
+
+- Only authorized officers can access their permitted queues.
+- Officer identity is established by the trusted authentication system.
+- Citizen sessions cannot call officer-only operations.
+- Officer decisions record the authenticated officer identity.
+- Approval and rejection require appropriate authorization and audit records.
+- Automatic approval remains a distinct system-generated decision.
+- Citizen OTP verification does not grant officer permissions.
+
+## 12. PHASE 9 — UPDATE ALL FRONTEND PAGES
+
+Search for every citizen-facing email login, registration, and authentication screen.
+
+Update the user interface consistently.
+
+Suggested pages:
+
+- Public home page.
+- Citizen mobile login.
+- OTP verification.
+- Registration or account-linking page.
+- Apply for pension.
+- Application review and confirmation.
+- Application success page.
+- Application-status page.
+- Application history.
+- Session-expired page.
+- Logout and session-cleanup behavior.
+
+Use consistent labels, styling, accessibility, and error messages.
+
+Examples of user-friendly messages:
+
+"Enter your mobile number to continue."
+
+"We have requested an OTP. Please check your registered mobile number."
+
+"The OTP has expired. Request a new OTP to continue."
+
+"The verification code is incorrect. Please try again."
+
+"Your mobile number has been verified."
+
+"Your application was submitted successfully."
+
+"Your application could not be submitted. No confirmation number has been issued."
+
+Do not display a successful-submission message unless the backend confirms the application was saved.
+
+Make sure these screens work on mobile devices and public kiosks.
+
+Do not use mock application data in production.
+
+## 13. PHASE 10 — TESTING
+
+Create automated tests appropriate to the existing technology stack.
+
+### Authentication tests
+
+1. Valid mobile number.
+2. Invalid mobile number.
+3. OTP request success.
+4. SMS provider failure.
+5. Correct OTP.
+6. Incorrect OTP.
+7. Expired OTP.
+8. Reused OTP.
+9. Too many verification attempts.
+10. Resend cooldown.
+11. OTP replay attempt.
+12. Session rotation after authentication.
+13. Logout invalidates the session.
+14. Expired session cannot access protected routes.
+
+### Citizen account tests
+
+15. Existing citizen with a verified mobile number.
+16. Existing citizen without a linked mobile number.
+17. Safe account-linking workflow.
+18. Duplicate mobile-number registration.
+19. Concurrent account-creation attempts.
+20. Unverified number cannot access protected data.
+
+### Pension workflow tests
+
+21. Authenticated citizen opens the application form.
+22. Unauthenticated citizen cannot submit.
+23. Applicant below age 60 is rejected.
+24. Unsupported block is rejected.
+25. Missing information is rejected.
+26. Invalid bank details are rejected.
+27. Missing age proof is rejected.
+28. Valid application receives a real application number.
+29. Duplicate submission is prevented.
+30. Application persists in the official database.
+31. Application is visible in the existing portal.
+
+### Application-status tests
+
+32. Citizen authenticates through mobile OTP.
+33. Citizen sees their own application.
+34. Citizen cannot see another person's application.
+35. A guessed application number does not bypass authentication.
+36. An unverified mobile number cannot retrieve status.
+37. Sensitive information is not exposed.
+38. Session expiry protects the status page.
+
+### MCP tests
+
+39. Citizen MCP requires appropriate authentication.
+40. Citizen MCP cannot trust an arbitrary mobile number.
+41. Citizen MCP can submit only through the official backend.
+42. Citizen MCP returns only confirmed application numbers.
+43. Citizen MCP status lookup enforces record ownership.
+44. Citizen MCP cannot invoke officer-only operations.
+45. A compatible MCP client can complete the supported authentication flow.
+
+### Officer regression tests
+
+46. Officer authentication still works.
+47. Officer permissions remain intact.
+48. Citizen login cannot grant officer privileges.
+49. Officer decisions retain the authenticated officer identity.
+50. The automatic-approval workflow remains functional.
+
+### Privacy and shared-device tests
+
+51. Sensitive information is cleared on logout where appropriate.
+52. One kiosk user cannot see the next user's data.
+53. Browser history and URLs do not expose sensitive details.
+54. OTPs are not present in production logs.
+55. Rate limits prevent excessive OTP requests.
+
+Run the tests and report actual results.
+
+Use a controllable test clock for expiry-related scenarios where appropriate.
+
+Do not use real citizen information or send real SMS messages in automated tests.
+
+Do not claim tests passed unless they actually ran.
+
+## 14. PHASE 11 — MIGRATION AND BACKWARD COMPATIBILITY
+
+Create a safe transition from email-based citizen authentication.
+
+Before migration:
+
+1. Identify existing citizen accounts.
+2. Identify applications linked to those accounts.
+3. Identify citizens with existing mobile numbers.
+4. Identify missing or unverified mobile numbers.
+5. Identify duplicate mobile numbers.
+6. Identify records that need manual or assisted recovery.
+7. Identify officer accounts that must remain separate.
+
+Preserve all existing application records and ownership relationships.
+
+Do not automatically grant access to existing accounts based solely on a newly entered mobile number.
+
+Do not delete the old email field if it is still required for notifications, contact information, recovery policy, or historical data.
+
+Document the migration process and rollback steps.
+
+## 15. PHASE 12 — DEPLOYMENT
+
+Prepare the application for secure deployment.
+
+Requirements:
+
+- HTTPS.
+- Persistent database.
+- Secure environment variables.
+- Proper SMS provider configuration.
+- No exposed OTP console.
+- No hardcoded credentials.
+- No public database port.
+- Appropriate rate limits.
+- Secure session cookies.
+- Production-safe error messages.
+- Appropriate logging.
+- Health checks.
+- Persistent document storage.
+- Correct MCP authentication and transport.
+- Database backups and recovery guidance.
+
+After deployment, verify:
+
+1. The public portal loads.
+2. Mobile login works with the configured SMS provider.
+3. OTP verification works.
+4. An authenticated citizen can apply.
+5. The application number is genuine.
+6. Application status is available after fresh authentication.
+7. Another citizen cannot access that application.
+8. Citizen MCP authentication works with a compatible client.
+9. Officer authentication still works.
+10. The existing portal displays the same application.
+11. OTP secrets are not exposed.
+12. No development-only authentication shortcut is active.
+
+Do not invent a live URL.
+
+If hosting credentials or SMS-provider access are unavailable, identify the blocker and provide the exact setup instructions.
+
+## 16. PHASE 13 — FINAL REPORT
+
+At completion, provide:
+
+1. Existing authentication architecture.
+2. Files changed.
+3. Database migrations.
+4. New and updated routes.
+5. Mobile OTP flow.
+6. OTP security settings.
+7. SMS provider configuration.
+8. Session management changes.
+9. Citizen MCP authentication changes.
+10. Officer authentication preserved.
+11. Test commands.
+12. Actual test results.
+13. Known limitations.
+14. Deployment steps.
+15. Actual verified live URL, if deployment was completed.
+16. Any manual steps I must complete.
+
+## 17. REQUIRED WORKING METHOD
+
+Work incrementally.
+
+PHASE A: Inspect the current repository.
+
+PHASE B: Report the current authentication design and all email dependencies.
+
+PHASE C: Design mobile OTP authentication and safe account migration.
+
+PHASE D: Implement the backend authentication services.
+
+PHASE E: Update citizen login and registration.
+
+PHASE F: Update pension application and application-status workflows.
+
+PHASE G: Update citizen MCP authentication.
+
+PHASE H: Preserve and test officer authentication.
+
+PHASE I: Run regression, security, and integration tests.
+
+PHASE J: Deploy and verify the live application.
+
+Do not modify files during the initial inspection phase.
+
+After each implementation phase, report changed files and actual test results.
+
+Do not skip tests to save time.
+
+Do not rewrite the application unnecessarily.
+
+Do not destroy existing data.
+
+Do not use insecure development shortcuts in production.
+
+Do not mark a feature complete without evidence.
+
+Begin with PHASE A only. Inspect the actual project files and report the current authentication architecture, every citizen-facing email dependency, the existing SMS integration, database dependencies, and the safest migration plan. Then stop and wait for my approval before modifying files.
